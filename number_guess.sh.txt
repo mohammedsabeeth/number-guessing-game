@@ -1,0 +1,54 @@
+#!/bin/bash
+
+PSQL="psql --username=freecodecamp --dbname=number_guess --no-align --tuples-only -c"
+
+echo -e "\nEnter your username:"
+read USERNAME
+
+USERNAME_AVAIL=$($PSQL "select username from users where username='$USERNAME'")
+GAMES_PLAYED=$($PSQL "select count(*) from users inner join games using(user_id) where username='$USERNAME'")
+BEST_GAME=$($PSQL "select min(no_of_guess) from users join games using(user_id) where username='$USERNAME'")
+      if [[ -z $USERNAME_AVAIL ]]
+            then
+                  
+                  INSERT_USERNAME_RESULT=$($PSQL "insert into users(username) values('$USERNAME')")
+                  echo "Welcome, $USERNAME! It looks like this is your first time here."
+            else
+                echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
+      fi
+RAN_NUMBER=$(( RANDOM % 1000 + 1 ))
+NO_OF_GUESS=1
+echo -e "\nGuess the secret number between 1 and 1000:"
+ while read GUESS_NUMBER
+  do
+   if [[ ! $GUESS_NUMBER =~ ^[0-9]+$ ]]
+      then
+            echo "That is not an integer, guess again:"
+      else
+            if [[ $GUESS_NUMBER -eq $RAN_NUMBER ]]
+                  then
+                        break;
+            else
+                  if [[ $GUESS_NUMBER -lt $RAN_NUMBER ]]
+                        then 
+                              echo "It's higher than that, guess again:"
+                  elif [[ $GUESS_NUMBER -gt $RAN_NUMBER ]]
+                        then
+                              echo "It's lower than that, guess again:"
+                  fi            
+            fi     
+      fi
+   NO_OF_GUESS=$(( $NO_OF_GUESS + 1))
+ done
+
+ if [[ $NO_OF_GUESS == 1 ]]
+     then 
+     echo "You guessed it in $NO_OF_GUESS tries. The secret number was $RAN_NUMBER. Nice job!"
+     else
+     echo "You guessed it in $NO_OF_GUESS tries. The secret number was $RAN_NUMBER. Nice job!"
+fi
+
+USER_ID=$($PSQL "select user_id from users where username='$USERNAME'")
+INSERT_GAMES=$($PSQL "insert into games(no_of_guess,user_id) values('$NO_OF_GUESS',$USER_ID)")
+ 
+ 
